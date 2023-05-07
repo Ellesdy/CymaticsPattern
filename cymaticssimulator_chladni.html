@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Cymatics Simulator - Chladni</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="./css/ellesdystyle.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script type= "module" src="./jssrc/chladni.js" defer></script>
+    <script type="module" src="./initialize.js"></script>
+  </head>
+  <body>
+    <div class="main-container">
+      <header>
+        <div id="settings">
+          <h1 id="collapsible-header">Settings<h1>
+            <form id="settings-form" class="hidden">
+      <p>Attempt at simulating cymatic patterns on a chladni plate.</p>
+      <p>Sound wave equation:
+         \[f(x) = a\sin(\pi nx) \sin(\pi my) + b\sin(\pi mx) \sin(\pi ny)\]
+      </p>
+      <p>Join the <a style="color:yellow;" href="https://discord.gg/worldtrade">Discord!</a></p>
+      <fieldset>
+        <legend>frequency parameters:</legend>
+        <label for="mSlider">m</label>
+        <input name="mSlider" type="range" id="mSlider" min="1" max="5" step="1" value="1">
+        <br>
+        <label for="nSlider">n</label>
+        <input name="nSlider" type="range" id="nSlider" min="1" max="5" step="1" value="4">
+        <br>
+        <label for="pSlider">pSlider:</label>
+        <input type="range" min="1" max="3" value="2" step="0.1" id="pSlider" />
+      </fieldset>
+      <br>
+      <legend for="Graphic Settings">Graphic Settings</legend>   
+      <label for="vSlider">Velocity:</label>
+      <input name="vSlider" type="range" id="vSlider" min="0.01" max="0.1" step="0.01" value="0.02"> 
+      <label for="numSlider">Density:</label>
+      <input name="numSlider" type="range" id="numSlider" min="2000" max="20000" step="2000" value="20000">
+      <label for="bgColor">Background color:</label>
+      <input type="color" id="bgColor" value="#330000" />
+      <label for="audioFile">or upload your own audio file:</label>
+      <input type="file" id="audioInput" accept="audio/*" />
+      <button id="playButton">Play</button>
+      <button id="pauseButton">Pause</button>
+    </form>
+  </div>
+</header>
+<main id="sketch-container"></main>
+</div>
+</body>
+<footer>
+  <a alt="More info" href="https://github.com/ellesdy" target="_blank"><i class="fa fa-github hover-opacity"></i></a>
+  </footer>
+</html>

@@ -1,0 +1,283 @@
+----- BEGIN FILE: concatenateFiles.js -----
+const fs = require('fs');
+const path = require('path');
+
+const directoryPath = './'; // Change this to your source folder
+const outputPath = 'combined_output.txt';
+
+function readDirectoryFiles(dirPath, delimiter) {
+  let result = '';
+
+  const files = fs.readdirSync(dirPath);
+  files.forEach((file) => {
+    const filePath = path.join(dirPath, file);
+    const stat = fs.statSync(filePath);
+
+    if (stat.isDirectory() && file !== 'node_modules' && file !== 'dist') {
+      result += readDirectoryFiles(filePath, delimiter);
+    } else if (stat.isFile() && path.extname(file) === '.js') {
+      result += `----- BEGIN FILE: ${filePath} -----\n`;
+      result += fs.readFileSync(filePath, 'utf8');
+      result += `\n----- END FILE: ${filePath} -----\n${delimiter}\n`;
+    }
+  });
+
+  return result;
+}
+
+const combinedFiles = readDirectoryFiles(directoryPath, '\n\n// DELIMITER\n\n');
+fs.writeFileSync(outputPath, combinedFiles);
+console.log(`All files combined into ${outputPath}`);
+----- END FILE: concatenateFiles.js -----
+
+
+// DELIMITER
+
+
+----- BEGIN FILE: initialize.js -----
+
+----- END FILE: initialize.js -----
+
+
+// DELIMITER
+
+
+----- BEGIN FILE: jssrc\chladni.js -----
+
+export const chladniSketch = function (p) {
+
+    /* Variables */
+  let particles, sliders, m, n, a, b;
+
+    // vibration strength params
+    let A = 0.02;
+    let minWalk = 0.002;
+
+    const settings = {
+      nParticles: 20000,
+      canvasSize: [600, 600],
+      drawHeatmap: false,
+    };
+
+    const pi = 3.1415926535;
+
+    // chladni 2D closed-form solution - returns between -1 and 1
+    const chladni = (x, y, a, b, m, n, C, p) => {
+      const f = C * Math.pow(m + 2 * n, p);
+      const angularFrequency = 2 * Math.PI * f;
+      return a * Math.sin(angularFrequency * n * x) * Math.sin(angularFrequency * m * y) + b * Math.sin(angularFrequency * m * x) * Math.sin(angularFrequency * n * y);
+    };
+
+    /* Initialization */
+    const DOMinit = () => {
+      let canvas = p.createCanvas(...settings.canvasSize);
+      canvas.parent("sketch-container");
+      canvas.id("chladni-canvas");
+
+      // sliders
+      sliders = {
+        m: p.select("#mSlider"),
+        n: p.select("#nSlider"),
+        a: p.select("#aSlider"),
+        b: p.select("#bSlider"),
+        C: p.select("#CSlider"),
+        p: p.select("#pSlider"),
+        v: p.select("#vSlider"),
+        num: p.select("#numSlider"),
+      };
+
+      //audio file input
+      let audioInput = p.select("#audioInput");
+      audioInput.input(loadAudioFile);
+
+      let bgColor = p.select("#bgColor");
+      bgColor.input(() => {
+        p.background(bgColor.value());
+      });
+    };
+
+    class Particle {
+      constructor() {
+        this.x = p.random(0, 1);
+        this.y = p.random(0, 1);
+        this.stochasticAmplitude;
+
+        this.updateOffsets();
+      }
+
+      move() {
+        let eq = chladni(this.x, this.y, a, b, m, n);
+        this.stochasticAmplitude = v * p.abs(eq);
+
+        if (this.stochasticAmplitude <= minWalk) this.stochasticAmplitude = minWalk;
+
+        this.x += p.random(-this.stochasticAmplitude, this.stochasticAmplitude);
+        this.y += p.random(-this.stochasticAmplitude, this.stochasticAmplitude);
+
+        this.updateOffsets();
+      }
+
+      updateOffsets() {
+        if (this.x <= 0) this.x = 0;
+        if (this.x >= 1) this.x = 1;
+        if (this.y <= 0) this.y = 0;
+        if (this.y >= 1) this.y = 1;
+
+        this.xOff = p.width * this.x;
+        this.yOff = p.height * this.y;
+      }
+
+      show() {
+        p.point(this.xOff, this.yOff);
+      }
+    }
+
+    const setupParticles = () => {
+      particles = [];
+      for (let i = 0; i < settings.nParticles; i++) {
+        particles[i] = new Particle();
+      }
+    };
+
+    let audioContext;
+    let audioSource;
+    let analyser;
+    let bufferLength;
+    let dataArray;
+
+    const loadAudioFile = (e) => {
+      if (!audioContext) {
+        audioContext = new AudioContext();
+      }
+
+      let file = e.target.files[0];
+      let fileReader = new FileReader();
+
+      fileReader.onload = (e) => {
+        let arrayBuffer = e.target.result;
+        audioContext.decodeAudioData(
+          arrayBuffer,
+          (buffer) => {
+            if (audioSource) {
+              audioSource.stop();
+            }
+            audioSource = audioContext.createBufferSource();
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 2048;
+            bufferLength = analyser.frequencyBinCount;
+            dataArray = new Uint8Array(bufferLength);
+
+            audioSource.buffer = buffer;
+            audioSource.connect(analyser);
+            analyser.connect(audioContext.destination);
+
+            let chunkDuration = 3; // seconds
+            let currentChunkStartTime = 0;
+
+            const processChunk = () => {
+              if (currentChunkStartTime < buffer.duration) {
+                audioSource.start(0, currentChunkStartTime, chunkDuration);
+                currentChunkStartTime += chunkDuration;
+                setTimeout(processChunk, chunkDuration * 1000);
+              } else {
+                audioSource.stop();
+              }
+            };
+
+            processChunk();
+          },
+          (err) => {
+            console.error("Error decoding audio data", err);
+          }
+        );
+      };
+
+      fileReader.readAsArrayBuffer(file);
+    };
+
+    const moveParticles = () => {
+      let movingParticles = particles.slice(0, N);
+    
+      for (let particle of movingParticles) {
+        particle.move();
+        particle.show();
+      }
+    };
+    
+
+    const updateParams = () => {
+      m = sliders.m.value();
+      n = sliders.n.value();
+      a = sliders.a.value();
+      b = sliders.b.value();
+      v = sliders.v.value();
+      n = sliders.num.value();
+    };
+
+    const drawHeatmap = () => {
+      if (settings.drawHeatmap) {
+        let res = 3;
+        for (let i = 0; i <= p.width; i += res) {
+          for (let j = 0; j <= p.height; j += res) {
+            let eq = chladni(i / p.width, j / p.height, a, b, m, n);
+            p.noStroke();
+            p.fill((eq + 1) * 127.5);
+            p.square(i, j, res);
+          }
+        }
+      }
+    };
+
+    const wipeScreen = () => {
+      p.background(30);
+      p.stroke(255);
+    };
+
+    p.setup = () => {
+      DOMinit();
+      setupParticles();
+    };
+
+    p.draw = () => {
+      wipeScreen();
+      const chladni = (x, y, a, b, m, n, C, p) => {
+        const f = C * Math.pow(m + 2 * n, p);
+        const angularFrequency = 2 * Math.PI * f;
+        return a * p.sin(angularFrequency * n * x) * p.sin(angularFrequency * m * y) + b * p.sin(angularFrequency * m * x) * p.sin(angularFrequency * n * y);
+      };
+
+      if (audioSource) {
+        analyser.getByteFrequencyData(dataArray);
+        const maxIndex = dataArray.reduce((iMax, x, i, arr) => (x > arr[iMax] ? i : iMax), 0);
+
+        // Apply stronger scaling for frequency bands
+        const expMaxIndex = Math.round(Math.pow(maxIndex, 3) / (bufferLength * bufferLength));
+
+        // Combine the 9 zones into 1 big zone by setting both m and n to the same value
+        m = p.map(expMaxIndex, 0, bufferLength, 1, 16);
+        n = m;
+
+        // Modify the mapping ranges for a, b, and v
+        a = p.map(dataArray[maxIndex], 0, 255, 1, 5);
+        b = p.map(dataArray[maxIndex], 0, 255, 1, 5);
+        v = p.map(dataArray[maxIndex], 0, 255, 0.01, 0.4);
+        n = p.map(dataArray[maxIndex], 0, 255, 1, 16);
+
+        // Modify the number of particles   
+      } else {
+        updateParams();
+      }
+      drawHeatmap();
+      moveParticles();
+    };
+  };
+
+  const myp5 = new p5(sketch, "sketch");
+
+  
+----- END FILE: jssrc\chladni.js -----
+
+
+// DELIMITER
+
+

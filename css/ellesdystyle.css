@@ -1,0 +1,130 @@
+/* General styles */
+body {
+  background-color: #330000;
+  font-family: "Montserrat", sans-serif;
+  color: white;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+a {
+  color: white;
+  text-decoration: none;
+}
+
+a:hover {
+  color: yellow;
+}
+
+/* Header */
+header {
+  width: 100%;
+  text-align: center;
+  padding: 1rem 0;
+  background-color: #222;
+  color: #fff;
+  font-family: Audiowide, cursive;
+  position: fixed;
+  z-index: 9998;
+  left: 0;
+  top: 0;
+}
+
+/* Settings form */
+#settings {
+  position: fixed;
+  left: 0;
+  top: 48px; /* Adjust this value according to the height of the header */
+  z-index: 9999;
+  cursor: move;
+  width: 300px; /* Set the width of the settings menu */
+}
+
+form {
+  text-align: left;
+  max-width: 100%; /* Change this to 100% */
+  margin: 0;
+  font-size: 0.9rem;
+  padding: 1rem;
+  background-color: rgba(34, 34, 34, 0.9);
+  border-radius: 0.25rem;
+  color: #fff;
+}
+
+form.hidden {
+  display: none;
+}
+
+fieldset {
+  border: none;
+  padding: 0;
+}
+
+legend {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+label {
+  display: block;
+  margin-top: 8px;
+}
+
+input[type="range"] {
+  width: 100%;
+}
+
+input[type="color"] {
+  display: inline-block;
+  width: auto;
+}
+
+/* Sketch container */
+#sketch-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Footer */
+footer {
+  padding: 1rem;
+  text-align: center;
+  background-color: #222;
+  color: #fff;
+  font-size: 1.5rem;
+}
+
+.fa {
+  font-size: 24px;
+  padding: 8px;
+}
+
+.hover-opacity:hover {
+  opacity: 0.7;
+}
+
+.hidden {
+  display: none;
+}
+
+.main-container {
+  position: relative;
+}
+
+#collapsible-header {
+  cursor: pointer;
+}
+
+#settings form {
+  display: none;
+}
+
+#settings form.hidden {
+  display: block;
+}

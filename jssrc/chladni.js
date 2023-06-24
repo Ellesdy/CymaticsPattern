@@ -5,7 +5,6 @@ const sketch = (p) => {
   v = parseFloat(document.querySelector("#vSlider").value);
 
   // vibration strength params
-  let A = 0.02;
   let minWalk = 0.002;
 
   const settings = {
@@ -156,9 +155,6 @@ const sketch = (p) => {
           analyser.fftSize = 2048;
           bufferLength = analyser.frequencyBinCount;
           dataArray = new Uint8Array(bufferLength);
-
-          let chunkDuration = 5; // seconds
-          let currentChunkStartTime = 0;
 
           const processChunk = () => {
             if (!audioSource) {
